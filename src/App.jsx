@@ -29,6 +29,10 @@ export default function App() {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleAdd()
   }
+    const handleDelete = (id) => {
+    if (!window.confirm('本当によろしいですか？'))return;
+    setTasks(prev => prev.filter(t => t.id !== id));
+    };
 
   return (
     <div className="App" style={{ maxWidth: 560, margin: '40px auto', padding: 16 }}>
@@ -61,7 +65,7 @@ export default function App() {
               {task.text}
             </span>
             <button disabled>編集</button>
-            <button disabled>削除</button>
+            <button onClick={() => handleDelete(task.id)}>削除</button>
           </li>
         ))}
       </ul>
