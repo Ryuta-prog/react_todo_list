@@ -4,6 +4,8 @@ import './App.css'
 export default function App() {
   const [tasks, setTasks] = useState([])
   const [input, setInput] = useState('')
+  const [editingId, setEditingId] = useState(null)
+  const [editingText, setEditingText] = useState('')
 
   const counts = useMemo(() => {
     const total = tasks.length
@@ -29,10 +31,39 @@ export default function App() {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') handleAdd()
   }
-    const handleDelete = (id) => {
-    if (!window.confirm('本当によろしいですか？'))return;
-    setTasks(prev => prev.filter(t => t.id !== id));
-    };
+
+  const handleDelete = (id) => {
+    if (!window.confirm('本当によろしいですか？')) return
+    setTasks(prev => prev.filter(t => t.id !== id))
+  }
+
+  const handleEditStart = (task) => {
+    setEditingId(task.id)
+    setEditingText(task.text)
+    setInput('')
+  }
+
+  const handleEditSave = (id) => {
+    const text = editingText.trim()
+    if (!text) return
+    setTasks(prev =>
+      prev.map(t => (t.id === id ? { ...t, text } : t))
+    )
+    setEditingId(null)
+    setEditingText('')
+    setEditingText('')
+    setInput('')
+  }
+
+  const handleEditCancel = () => {
+    setEditingId(null)
+    setEditingText('')
+    setInput('')
+  }
+
+  const handleEditKeyDown = (e, id) => {
+    if (e.key === 'Enter') handleEditSave(id)
+  }
 
   return (
     <div className="App" style={{ maxWidth: 560, margin: '40px auto', padding: 16 }}>
@@ -61,10 +92,26 @@ export default function App() {
               checked={task.completed}
               onChange={() => handleToggle(task.id)}
             />
-            <span style={{ flex: 1, textDecoration: task.completed ? 'line-through' : 'none', color: task.completed ? '#888' : '#222' }}>
-              {task.text}
-            </span>
-            <button disabled>編集</button>
+            {editingId === task.id ? (
+              <>
+                <input
+                  type="text"
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onKeyDown={(e) => handleEditKeyDown(e, task.id)}
+                  style={{ flex: 1, padding: 8 }}
+                />
+                <button onClick={() => handleEditSave(task.id)}>保存</button>
+                <button onClick={handleEditCancel}>キャンセル</button>
+              </>
+            ) : (
+              <>
+                <span style={{ flex: 1, textDecoration: task.completed ? 'line-through' : 'none', color: task.completed ? '#888' : '#222' }}>
+                  {task.text}
+                </span>
+                <button onClick={() => handleEditStart(task)}>編集</button>
+              </>
+            )}
             <button onClick={() => handleDelete(task.id)}>削除</button>
           </li>
         ))}
